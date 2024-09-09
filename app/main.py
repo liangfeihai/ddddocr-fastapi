@@ -1,3 +1,5 @@
+import logging
+
 import uvicorn
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from typing import Optional, Union
@@ -38,13 +40,13 @@ async def ocr_endpoint(
         png_fix: bool = Form(False)
 ):
     try:
-        if file.size == 0 and image is None:
+        if file is None and image is None:
             return APIResponse(code=400, message="Either file or image must be provided")
-
         image_bytes = await decode_image(file or image)
         result = ocr_service.ocr_classification(image_bytes, probability, charsets, png_fix)
         return APIResponse(code=200, message="Success", data=result)
     except Exception as e:
+        logging.exception(e)
         return APIResponse(code=500, message=str(e))
 
 
